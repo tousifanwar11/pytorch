@@ -4,7 +4,8 @@ import enum
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Any, Optional, Union
+from typing_extensions import override
 
 from ... import ir
 from ...config import cuda as inductor_cuda_config
@@ -120,7 +121,7 @@ GEMM_ARGS_CUTLASS_3X = r"""
     {{epilogue_arguments}},
     hw_info
   };
-  arguments.scheduler.max_swizzle_size = {{swizzle}};
+  arguments.scheduler.max_swizzle_size = 2;
 """
 
 # Jinja template for Cutlass 3.x GEMM Kernel arguments if epilogue fusion is applied,
@@ -997,6 +998,20 @@ class CUTLASSGemmTemplate(CUTLASSTemplate, ABC):
             for arg_type, arg_name in zip(arg_types, arg_names)
         ]
         return f"{kernel.kernel_name}({', '.join(arguments)}, workspace_size_ptr, (uint8_t*)workspace_data.get(), 0);"
+
+    @override
+    def get_runtime_arg_decls(self) -> str:
+        """
+        Helper method to retrieve runtime args from generate kwargs
+        """
+        return ",".join(["const uint8_t swizzle"])
+
+    @override
+    def get_runtime_arg_values(self, **kwargs) -> list[Any]:
+        """
+        Helper method to retrieve runtime args from generate kwargs
+        """
+        return []  # [kwargs["swizzle"]]
 
 
 class CUTLASS3xGemmTemplate(CUTLASSGemmTemplate):

@@ -819,6 +819,7 @@ class CUDABenchmarkRequest(GPUDeviceBenchmarkMixin, BenchmarkRequest):
             run_method,
             *args,
             *self.extra_args,
+            2,
             None,  # null workspace size ptr
             workspace_ptr,  # set workspace ptr,
             stream_ptr,
@@ -840,6 +841,7 @@ class CUDABenchmarkRequest(GPUDeviceBenchmarkMixin, BenchmarkRequest):
         run_method(
             *args,  # input ptrs and output ptrs
             *self.extra_args,
+            2,
             byref(
                 c_workspace_size
             ),  # set workspace size ptr to retrieve workspace size
